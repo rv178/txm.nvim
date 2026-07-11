@@ -1,6 +1,18 @@
 local M = {}
+local PAD = 4
+
+--[[
+R_{\mu\nu} - \frac{1}{2} R g_{\mu\nu} + \Lambda g_{\mu\nu} = \frac{8 \pi G}{c^4} T_{\mu\nu}
+\begin{bmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{bmatrix}
+\begin{bmatrix} x \\ y \end{bmatrix}
+--]]
 
 local function open_popup(text)
+	-- add padding
+	local pad = string.rep(' ', PAD)
+	text = vim.tbl_map(function(line) return pad .. line end, text)
+	text = vim.list_extend(vim.list_extend({ '' }, text), { '' })
+
 	local buf = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, text)
 
@@ -9,18 +21,18 @@ local function open_popup(text)
 
 	local win = vim.api.nvim_open_win(buf, true, {
 		relative = 'editor',
-		width = width,
+		width = width + PAD,
 		height = height,
 		row = (vim.o.lines - height) / 2,
 		col = (vim.o.columns - width) / 2,
-		border = 'solid',
-		title = 'Txm',
+		border = 'single',
+		title = 'txm',
 		title_pos = 'center',
 		style = 'minimal',
 	})
 
 	vim.bo[buf].modifiable = false
-	vim.wo[win].winhighlight = 'NormalFloat:NormalFloat,FloatTitle:NormalFloat'
+	vim.wo[win].winhighlight = 'NormalFloat:Normal,FloatBorder:Normal,FloatTitle:Normal'
 	vim.keymap.set('n', 'q', '<Cmd>close<CR>', { buffer = buf })
 end
 
@@ -29,7 +41,7 @@ function M.preview()
 	local text = vim.fn.getreg('z')
 	vim.fn.setreg('z', '')
 
-	open_popup(vim.fn.systemlist({ 'txm', text }))
+	open_popup(vim.fn.systemlist({ 'txm', '--unboxed', text }))
 end
 
 return M
